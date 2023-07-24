@@ -1,0 +1,9 @@
+{
+    "model_name": "EleutherAI/pythia-70m-deduped",
+    "max_length": 512,
+    "batchsize": 8,
+    "lr": "1e-5",
+    "epochs": 10,
+    "save_steps": 500,
+    "device": "cuda"
+}
