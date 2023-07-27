@@ -14,6 +14,7 @@ class JsonlGenerator:
             lines = f.readlines()
             self.text = lines
 
+        self.cfg = cfg
         self.tokenizer = tok
 
     def _generate(self):
@@ -21,23 +22,48 @@ class JsonlGenerator:
             x = json.loads(v)
             yield x
 
-    def preprocess(self, x):
-        # TODO: we need to split up long lines, not truncate.
-        # There's an example of something similar in the huggingface tutorial
+    def tokenize(self, x):
         text = self.tokenizer(x['text'], truncation=True)
 
         return text
 
+    def split_oversized(self, x):
+        # <class 'str'> text
+        # <class 'str'> metadata
+        # <class 'str'> input_ids
+        # <class 'str'> attention_mask
+
+        blocksize = self.cfg['blocksize']
+        new_text = []
+
+        for line in x['text']:
+            if len(line) >= blocksize:
+                total_length = (len(line) // blocksize) * blocksize
+                for ix in range(0, total_length, blocksize):
+                    new_text.append(line[ix: ix + blocksize])
+
+        x['text'] = new_text
+        return x
+
     def get_dsets(self):
         chorale_dset = ds.Dataset.from_generator(self._generate)
-        self.dset_split = chorale_dset.train_test_split(test_size=0.2)
+        self.dset_split = chorale_dset.train_test_split(test_size=0.1)
 
         self.tokenized_train = self.dset_split['train'].shuffle().map(
-            self.preprocess,
+            self.split_oversized,
+            remove_columns='metadata',
+            batched=True,
+        ).map(
+            self.tokenize,
             batched=True,
         )
+
         self.tokenized_val = self.dset_split['test'].shuffle().map(
-            self.preprocess,
+            self.split_oversized,
+            remove_columns='metadata',
+            batched=True,
+        ).map(
+            self.tokenize,
             batched=True,
         )
 
@@ -64,9 +90,12 @@ class ScorePredictorModel:
             weight_decay=0.01,
             save_strategy='steps',
             save_steps=self.cfg['save_steps'],
-            evaluation_strategy='epoch',
+            evaluation_strategy='steps',
+            eval_steps=self.cfg['eval_steps'],
             push_to_hub=False,
             report_to='none',
+            gradient_accumulation_steps=self.cfg['gradient_accumulation_steps'],
+            lr_scheduler_type=self.cfg['scheduler']
             # bf16=True,
             # no_cuda=True,
             # use_ipex=True
@@ -112,7 +141,7 @@ if __name__ == '__main__':
 
     tokenizer = tfs.AutoTokenizer.from_pretrained(
         cfg['model_name'],
-        model_max_length=cfg['max_length'],
+        model_max_length=cfg['blocksize'],
     )
     tokenizer.pad_token = tokenizer.eos_token
 

@@ -42,16 +42,28 @@ def process_score(score):
 if __name__ == '__main__':
     bcl = m21.corpus.chorales.ChoraleList()
     bcl.prepareList()
-    with open('data.txt', 'w') as f:
-        for num in bcl.byBWV.keys():
-            identifier = "bach/bwv{}".format(num)
-            c = m21.corpus.parse(identifier)
-            score_txt = process_score(c)
 
-            jsonl = json.dumps({
-                'text': score_txt,
-                'metadata': 'unused'
-            }) + "\n"
-            f.write(jsonl)
+    composers = [
+        'bach',
+        'beethoven',
+        'monteverdi',
+        'mozart',
+        # 'palestrina',
+        # 'ryansMammoth',
+        # 'trecento',
+    ]
+    with open('data.txt', 'w') as f:
+        for composer in composers:
+            pieces = m21.corpus.getComposer(composer)
+            for p in pieces:
+                print("Parsed {}".format(p))
+                c = m21.corpus.parse(p)
+                score_txt = process_score(c)
+
+                jsonl = json.dumps({
+                    'text': score_txt,
+                    'metadata': 'unused'
+                }) + "\n"
+                f.write(jsonl)
 
 
