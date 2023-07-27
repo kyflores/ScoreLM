@@ -7,6 +7,7 @@ import transformers as tfs
 import torch
 
 teststr = "|n(quarter, F3 A3 C4 F4)|_|n(eighth, E3 G3 C4 G4 C5), n(eighth, E3 G3 C4 C5), n(eighth, F3 A3 C4 F4 A4), n(eighth, F3 A3 C4 A4), n(eighth, D3 A3 D4 F4), n(eighth, D3 F3 A3 D4 F4), n(eighth, A2 A3 F4 C5), n(eighth, A2 A3 C4 F4 C5)|_|n(16th, B-2 F3 F4 B-4 D5), n(16th, B-2 F3 B-4 D5), n(16th, C3 F3 A4 B-4 D5), n(16th, C3 F3 G4 B-4 D5), n(eighth, D3 F4 B-4 D5), n(eighth, E3 F4 G4 B-4 D5), n(quarter, F3 F4 A4 C5), n(quarter, F3 F4 A4 C5)|_|n(eighth, B-3 F4 B-4 D5), n(16th, B-3 F4 G4 B-4 D5), n(16th, B-3 F4 A4 B-4 D5), n(eighth, A3 G4 B-4 E5), n(16th, G3 G4 B-4 C5 E5), n(16th, G3 G4 B-4 E5), n(eighth, A3 F4 A4 C5 F5), n(eighth, B3 D4 G4 D5 F5), n(eighth, C4 E4 G4 C5 E5), n(eighth, C4 E4 G4 C5 E5)|_|n(eighth, F3 F4 A4 C5 D5), n(16th, F3 E4 A4 B4 D5), n(16th, F3 E4 A4 D5), n(quarter, G3 D4 G4 B4 D5), n(quarter, C3 E4 G4 C5), n(eighth, F3 C4 F4 A4), n(eighth, F3 A3 F4 A4)|_|n(eighth, B-2 F3 F4 D5), n(eighth, B-2 G3 F4 B-4 D5), n(eighth, C3 A3 E4 A4 C5), n(eighth, C3 A3 E4 G4 C5), n(eighth, D3 A3 F4 B-4), n(eighth, E3 G3 C4 G4 B-4), n(eighth, F3 A3 C4 F4 A4), n(eighth, F3 C4 F4 A4)|_|n(eighth, C3 G3 C4 F4 G4), n(16th, C3 A3 F4 G4), n(16th, C3 F3 A3 F4 G4), n(eighth, C3 B-3 C4 E4 G4), n(16th, C3 B-3 C4 E4 G4), n(16th, C3 B-3 C4 E4 G4), n(quarter, F2 A3 C4 F4), n(quarter, F3 A3 C4 F4)|_|n(eighth, E3 G3 C4 G4 C5), n(eighth, E3 G3 C4 C5), n(eighth, F3 A3 C4 F4 A4), n(eighth, F3 A3 C4 A4), n(eighth, D3 A3 D4 F4), n(eighth, D3 F3 A3 D4 F4), n(eighth, A2 A3 F4 C5), n(eighth, A2 A3 C4 F4 C5)|_|n(16th, B-2 F3 F4 B-4 D5), n(16th, B-2 F3 B-4 D5), n(16th, C3 F3 A4 B-4 D5), n(16th, C3 F3 G4 B-4 D5), n(eighth, D3 F4 B-4 D5), n(eighth, E3 F4 G4 B-4 D5), n(quarter, F3 F4 A4 C5), n(quarter, F3 F4 A4 C5)|_|n(eighth, B-3 F4 B-4 D5), n(16th, B-3 F4 G4 B-4 D5), n(16th, B-3 F4 A4 B-4 D5), n(eighth, A3 G4 B-4 E5), n(16th, G3 G4 B-4 C5 E5), n(16th, G3 G4 B-4 E5), n(eighth, A3 F4 A4 C5 F5), n(eighth, B3 D4 G4 D5 F5), n(eighth, C4 E4 G4 C5 E5), n(eighth, C4 E4 G4 C5 E5)|_|n(eighth, F3 F4 A4 C5 D5), n(16th, F3 E4 A4 B4 D5), n(16th, F3 E4 A4 D5), n(quarter, G3 D4 G4 B4 D5), n(quarter, C3 E4 G4 C5), n(eighth, F3 C4 F4 A4), n(eighth, F3 A3 F4 A4)|_|n(eighth, B-2 F3 F4 D5), n(eighth, B-2 G3 F4 B-4 D5), n(eighth, C3 A3 E4 A4 C5), n(eighth, C3 A3 E4 G4 C5), n(eighth, D3 A3 F4 B-4), n(eighth, E3 G3 C4 G4 B-4), n(eighth, F3 A3 C4 F4 A4), n(eighth, F3 C4 F4 A4)|_|n(eighth, C3 G3 C4 F4 G4), n(16th, C3 A3 F4 G4), n(16th, C3 F3 A3 F4 G4), n(eighth, C3 B-3 C4 E4 G4), n(16th, C3 B-3 C4 E4 G4), n(16th, C3 B-3 C4 E4 G4), n(quarter, F2 A3 C4 F4)|_|n(eighth, E3 C4 G4 C5), n(16th, E3 C4 G4 C5), n(16th, E3 C4 G4 C5), n(16th, E3 C4 G4 C5), n(16th, E3 C4 G4 C5), n(16th, E3 C4 G4 C5), n(16th, E3 C4 G4 C5), n(half, F3 C4 F4 A4)|_|n(16th, C3 C4 F4 G4 C5), n(16th, C3 C4 F4 C5), n(16th, C3 C4 E4 G4 C5), n(16th, C3 C4 D4 A4 C5), n(quarter, C3 C4 E4 G4 C5), n(half, F3 C4 F4 A4)|_|n(eighth, F3 C4 F4 A4), n(eighth, G3 C4 F4 A4), n(eighth, A3 C4 F4 A4), n(eighth, F3 C4 F4 A4), n(eighth, C3 C4 E4 G4 C5), n(16th, D3 C4 E4 G4 B-4), n(16th, D3 C4 E4 G4 A4), n(eighth, E3 C4 E4 G4 B-4), n(16th, C3 C4 E4 G4 C5), n(16th, C3 C4 E4 G4 B-4)|_|n(eighth, F3 C4 F4 A4), n(eighth, G3 C4 F4 G4 A4), n(eighth, A3 C4 F4 A4), n(eighth, F3 C4 F4 A4), n(quarter, C4 E4 G4 C5), n(eighth, B-3 C4 F4 A4 C5), n(eighth, A3 C4 F4 A4)|_|n(eighth, G3 D4 G4 B-4), n(16th, G3 D4 F4 G4 B-4), n(16th, G3 D4 E4 G4 B-4), n(eighth, D4 F4 A4), n(eighth, C4 D4 E4 F4 A4), n(eighth, B-3 D4 F4 G4), n(eighth, F3 B-3 D4 G4), n(eighth, C4 E4 G4), n(16th, C4 E4 G4), n(16th, C4 E4 G4)|_|n(half, F3 A3 C4 F4), n(16th, D3 D4 A4 F5), n(16th, D3 D4 G4 A4 F5), n(16th, F3 D4 A4 F5), n(16th, F3 D4 A4 B-4 F5), n(eighth, A3 C4 A4 C5 E5), n(eighth, A3 C4 G4 C5 E5)|_|n(eighth, B-2 D4 F4 C5 D5), n(eighth, D3 B-3 F4 B-4 D5), n(eighth, F3 F4 B-4 C5), n(eighth, F3 A3 F4 A4 C5), n(eighth, G3 B-3 F4 A4 B-4), n(eighth, G3 B-3 E4 G4 B-4), n(eighth, A3 C4 G4 A4), n(eighth, D3 A3 F4 A4)|_|n(eighth, B2 D4 F4 G4), n(eighth, B2 F3 D4 F4 G4), n(16th, C3 G3 C4 E4 G4), n(16th, C3 F3 C4 E4 G4), n(16th, C3 G3 C4 E4 G4), n(16th, C3 G3 C4 E4 G4), n(quarter, F2 A3 C4 F4)|"
+teststr = "|n(0.5, F#3 A3 C#4 F#4), n(0.5, F#3 B3 C#4 G#4)|_|n(0.25, F#3 C#4 F#4 A4), n(0.25, G#3 C#4 F#4 A4), n(0.25, A3 C#4 F#4 A4), n(0.25, B3 C#4 F#4 A4), n(0.5, C#4 E#4 G#4), n(0.5, C#3 B3 E#4 G#4), n(1.0, D3 A3 F#4), n(0.5, D3 B3 F#4), n(0.5, D3 B3 F#4 G#4)|_|n(0.5, C#3 C#4 F#4 A4), n(0.5, B2 C#4 F#4 A4), n(0.5, C#3 C#4 E#4 G#4), n(0.5, C#3 B3 E#4 G#4), n(1.0, F#2 A3 C#4 F#4), n(1.0, F#3 A3 F#4 C#5)|_|n(0.5, G#3 B3 F#4 B4), n(0.5, G#3 B3 E#4 B4), n(0.5, A3 C#4 F#4 A4), n(0.5, B3 C#4 F#4 A4), n(1.0, C#4 E#4 G#4), n(1.0, C#3 C#4 E#4 G#4)|_|n(0.5, F#3 C#4 F#4 A4), n(0.5, E3 C#4 F#4 A4), n(0.5, D3 D4 F#4 A4), n(0.5, C#3 D4 F#4 A4), n(0.5, D3 D4 F#4 B4), n(0.25, B2 E4 G#4 B4), n(0.25, B2 F#4 A4 B4), n(0.5, E3 E4 G#4 B4), n(0.5, E2 E3 D4 G#4 B4)|_|n(0.5, A2 C#4 G#4 C#5), n(0.5, A3 C#4 F#4 C#5), n(0.5, G#3 B3 E#4 C#5), n(0.5, F#3 A3 F#4 C#5), n(0.5, F#3 D4 G#4 B4), n(0.5, E#3 C#4 G#4 B4), n(0.5, F#3 C#4 G#4 A4), n(0.5, D3 D4 F#4 A4)|_|n(0.5, B2 D4 F#4 G#4), n(0.5, G#2 B3 F#4 G#4), n(0.5, C#3 G#3 E#4 G#4), n(0.5, C#3 C#4 E#4 G#4), n(1.0, F#2 A3 C#4 F#4), n(0.5, F#3 A3 F#4 C#5), n(0.5, E3 A3 F#4 C#5)|_|n(0.5, D3 B3 F#4 B4), n(0.5, C#3 C#4 E#4 B4), n(0.5, B#2 D#4 F#4 A4), n(0.5, B#2 D#4 F#4 G#4), n(1.0, C#3 C#4 E#4 G#4), n(0.5, A2 C#4 F#4 C#5), n(0.5, A2 C#4 E4 C#5)|_|n(0.5, B2 F#3 D#4 B4), n(0.5, C#3 F#3 E4 B4), n(0.5, D#3 B3 F#4 A4), n(0.5, B2 B3 D#4 A4), n(1.0, E3 B3 E4 G#4), n(0.5, E#3 C#4 G#4), n(0.5, C#3 C#4 E#4 G#4)|_|n(0.5, F#3 C#4 F#4 A4), n(0.5, F#2 F#3 A3 F#4 A4), n(0.5, F#3 D4 A4), n(0.5, D3 D4 F#4 A4), n(0.5, G3 D4 B4), n(0.5, G2 G3 B3 D4 B4), n(0.5, G#3 E4 B4), n(0.5, E3 E4 G#4 B4)|_|n(0.5, A3 E4 A4 C#5), n(0.5, A2 A3 C#4 G4 C#5), n(0.5, A#3 F#4 C#5), n(0.5, F#3 E4 F#4 C#5), n(0.5, B3 D4 F#4 B4), n(0.5, B2 B3 C#4 E#4 B4), n(0.5, B#3 D#4 F#4 A4), n(0.5, G#3 D#4 F#4 G#4)|_|n(0.5, C#4 F#4 G#4), n(0.25, G#3 B3 C#4 E#4 G#4), n(0.25, G#3 B3 C#4 D#4 G#4), n(0.5, C#3 C#4 E#4 G#4), n(0.5, C#3 B3 E#4 G#4), n(1.0, F#2 F#3 A3 C#4 F#4)|"
 
 def infer(cfg):
     tokenizer = tfs.AutoTokenizer.from_pretrained(
@@ -31,9 +32,9 @@ def infer(cfg):
         output = model.generate(
             **inputs,
             do_sample=True,
-            max_new_tokens=8192,
-            temperature=0.8,
-            top_k=100,
+            max_new_tokens=1024,
+            temperature=0.75,
+            top_k=50,
             pad_token_id=tokenizer.eos_token_id,
         )
     output = tokenizer.batch_decode(output)[0]
@@ -52,7 +53,7 @@ def interpret(text):
             duration = m[0]
             notes = [x.strip() for x in m[1].strip().split(' ')]
 
-            m_duration = m21.duration.Duration(duration)
+            m_duration = m21.duration.Duration(float(duration))
             m_notes = [m21.note.Note(x) for x in notes]
 
             m_chord = m21.chord.Chord(m_notes)
@@ -70,3 +71,5 @@ if __name__ == '__main__':
 
     print(output)
     interpret(output).show()
+
+    # interpret(teststr).show()

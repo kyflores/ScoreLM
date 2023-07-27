@@ -18,8 +18,8 @@ def stringize_measure(measure: m21.stream.Measure) -> str:
         if isinstance(n, m21.chord.Chord):
             d = n.duration
             nnames = "n({}, {})".format(
-                # d.quarterLength,
-                d.type,
+                d.quarterLength,
+                # d.type,
                 " ".join([p.nameWithOctave for p in n.pitches]))
             out.append(nnames)
         elif isinstance(n, m21.note.Note):
@@ -45,9 +45,9 @@ if __name__ == '__main__':
 
     composers = [
         'bach',
-        'beethoven',
-        'monteverdi',
-        'mozart',
+        # 'beethoven',
+        # 'monteverdi',
+        # 'mozart',
         # 'palestrina',
         # 'ryansMammoth',
         # 'trecento',

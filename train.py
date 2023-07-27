@@ -28,11 +28,6 @@ class JsonlGenerator:
         return text
 
     def split_oversized(self, x):
-        # <class 'str'> text
-        # <class 'str'> metadata
-        # <class 'str'> input_ids
-        # <class 'str'> attention_mask
-
         blocksize = self.cfg['blocksize']
         new_text = []
 

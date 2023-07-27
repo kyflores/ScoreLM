@@ -3,9 +3,9 @@
     "blocksize": 512,
     "batchsize": 4,
     "gradient_accumulation_steps": 2,
-    "lr": "5e-5",
+    "lr": "5e-4",
     "scheduler": "cosine",
-    "epochs": 3,
+    "epochs": 5,
     "save_steps": 500,
     "eval_steps": 100,
     "device": "cuda"
