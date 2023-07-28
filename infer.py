@@ -32,8 +32,8 @@ def infer(cfg):
         output = model.generate(
             **inputs,
             do_sample=True,
-            max_new_tokens=1024,
-            temperature=0.75,
+            max_new_tokens=2048,
+            temperature=0.65,
             top_k=50,
             pad_token_id=tokenizer.eos_token_id,
         )
@@ -42,15 +42,19 @@ def infer(cfg):
 
 # Parse our text format back into a music21 score
 def interpret(text):
-    "n(duration, Note Note Note Note)"
-    measures = re.findall(r"\|.*?\|", text)
+    # measures = re.findall(r"\|.*?\|", text)
 
     outstream = m21.stream.Stream()
     note_match = re.compile(r"n\((?P<duration>[^,]*),(?P<notes>.*?)\)")
-    for measure in measures:
-        matches = re.findall(note_match, measure)
-        for m in matches:
-            duration = m[0]
+    # for measure in measures:
+    matches = re.findall(note_match, text)
+    for m in matches:
+        try:
+            duration = float(m[0])
+            if duration == 0.:
+                print("Model generated 0 duration, setting to 0.5 to continue...")
+                duration = 0.5
+
             notes = [x.strip() for x in m[1].strip().split(' ')]
 
             m_duration = m21.duration.Duration(float(duration))
@@ -59,6 +63,10 @@ def interpret(text):
             m_chord = m21.chord.Chord(m_notes)
             m_chord.duration = m_duration
             outstream.append(m_chord)
+
+        # Some of the mistakes are recoverable, but for now just drop failed notes.
+        except Exception as e:
+            print("Failed to build note, skipping. {}".format(e))
 
     return outstream
 
@@ -69,7 +77,8 @@ if __name__ == '__main__':
 
     output = infer(cfg)
 
-    print(output)
-    interpret(output).show()
+    with open('out.txt', 'w') as f:
+        f.write(output)
 
     # interpret(teststr).show()
+    interpret(output).show()

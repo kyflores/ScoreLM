@@ -163,3 +163,4 @@ finetune/
 score-lm/
 *.bin
 data.txt
+out.txt

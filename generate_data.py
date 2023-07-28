@@ -45,9 +45,9 @@ if __name__ == '__main__':
 
     composers = [
         'bach',
-        # 'beethoven',
+        'beethoven',
         # 'monteverdi',
-        # 'mozart',
+        'mozart',
         # 'palestrina',
         # 'ryansMammoth',
         # 'trecento',

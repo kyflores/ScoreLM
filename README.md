@@ -38,13 +38,15 @@ batchsize:
     How many items to process in a batch. Use the largest batchsize your VRAM allows. Reduce if
     out of VRAM. When reducing batchsize, you may also need to reduce lr.
 ```
-
 TODO:
 * Support checkpointing and checkpoint loading.
-* Expand configuration for batchsize, configure gradient accumulation steps.
-* Add another processing step to the `Dataset.map(...)` to split long samples instead of truncating.
-* Configure `accelerate` to use deepspeed, which should allow training larger models by using
-  VRAM more efficiently.
+
+### Deepspeed
+Deepspeed implements optimizations for training that can significantly reduce the VRAM
+requirement, at the cost of additional main RAM use. To use deepspeed,
+```
+accelerate launch --config_file accel_config.yaml train.py
+```
 
 ## Inference
 Use `infer.py` to output text with a trained model. This scripts loads the model

@@ -42,25 +42,18 @@ class JsonlGenerator:
 
     def get_dsets(self):
         chorale_dset = ds.Dataset.from_generator(self._generate)
-        self.dset_split = chorale_dset.train_test_split(test_size=0.1)
-
-        self.tokenized_train = self.dset_split['train'].shuffle().map(
+        dset = chorale_dset.map(
             self.split_oversized,
             remove_columns='metadata',
             batched=True,
         ).map(
             self.tokenize,
             batched=True,
-        )
+        ).shuffle()
 
-        self.tokenized_val = self.dset_split['test'].shuffle().map(
-            self.split_oversized,
-            remove_columns='metadata',
-            batched=True,
-        ).map(
-            self.tokenize,
-            batched=True,
-        )
+        self.dset_split = dset.train_test_split(test_size=0.1)
+        self.tokenized_train = self.dset_split['train']
+        self.tokenized_val = self.dset_split['test']
 
         return self.tokenized_train, self.tokenized_val
 
@@ -90,7 +83,7 @@ class ScorePredictorModel:
             push_to_hub=False,
             report_to='none',
             gradient_accumulation_steps=self.cfg['gradient_accumulation_steps'],
-            lr_scheduler_type=self.cfg['scheduler']
+            lr_scheduler_type=self.cfg['scheduler'],
             # bf16=True,
             # no_cuda=True,
             # use_ipex=True
