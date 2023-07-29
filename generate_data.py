@@ -1,5 +1,7 @@
-import music21 as m21
+from multiprocessing import Pool
 import json
+
+import music21 as m21
 
 # Turn music21 scores into strings. In short, the process is
 # 1. Chordify the score. Chordify "flattens" multiple voices into chords in one voice.
@@ -39,6 +41,22 @@ def process_score(score):
     out = "_".join(measure_strings)
     return out
 
+def write_composer(composer: str):
+    print('Serializing {}'.format(composer))
+    pieces = m21.corpus.getComposer(composer)
+    with open('dataset/{}.jsonl'.format(composer), 'w') as f:
+        for p in pieces:
+            print("Parsed {}".format(p))
+            c = m21.corpus.parse(p)
+            score_txt = process_score(c)
+
+            line = json.dumps({
+                'text': score_txt,
+                'metadata': 'unused'
+            }) + "\n"
+            f.write(line)
+
+
 if __name__ == '__main__':
     bcl = m21.corpus.chorales.ChoraleList()
     bcl.prepareList()
@@ -46,24 +64,14 @@ if __name__ == '__main__':
     composers = [
         'bach',
         'beethoven',
-        # 'monteverdi',
+        'monteverdi',
         'mozart',
-        # 'palestrina',
-        # 'ryansMammoth',
-        # 'trecento',
+        'palestrina',
+        'ryansMammoth',
+        'trecento',
     ]
-    with open('data.txt', 'w') as f:
-        for composer in composers:
-            pieces = m21.corpus.getComposer(composer)
-            for p in pieces:
-                print("Parsed {}".format(p))
-                c = m21.corpus.parse(p)
-                score_txt = process_score(c)
+    with Pool(8) as p:
+        p.map(write_composer, composers)
 
-                jsonl = json.dumps({
-                    'text': score_txt,
-                    'metadata': 'unused'
-                }) + "\n"
-                f.write(jsonl)
 
 

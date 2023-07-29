@@ -31,7 +31,7 @@ In particular, check out these parameters:
 ```
 model_name:
     Set by default to EleutherAI/pythia-70m-deduped, the smallest Pythia variant.
-    If you have enough VRAM, you can select 160m, 400m, etc.
+    If you have enough VRAM, you can select 160m, 410m, etc.
 max_length:
     The sequence length the model can process, in tokens. Reduce if you're running out of VRAM.
 batchsize:

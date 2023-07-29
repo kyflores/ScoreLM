@@ -54,6 +54,7 @@ class JsonlGenerator:
         self.dset_split = dset.train_test_split(test_size=0.1)
         self.tokenized_train = self.dset_split['train']
         self.tokenized_val = self.dset_split['test']
+        print("Train: {}, Val: {}".format(len(self.tokenized_train), len(self.tokenized_val)))
 
         return self.tokenized_train, self.tokenized_val
 
@@ -84,7 +85,7 @@ class ScorePredictorModel:
             report_to='none',
             gradient_accumulation_steps=self.cfg['gradient_accumulation_steps'],
             lr_scheduler_type=self.cfg['scheduler'],
-            # bf16=True,
+            bf16=True,
             # no_cuda=True,
             # use_ipex=True
         )
@@ -133,7 +134,7 @@ if __name__ == '__main__':
     )
     tokenizer.pad_token = tokenizer.eos_token
 
-    t, v = JsonlGenerator(cfg, tokenizer, 'data.txt').get_dsets()
+    t, v = JsonlGenerator(cfg, tokenizer, 'dataset/data.jsonl').get_dsets()
     mdl = ScorePredictorModel(cfg, tokenizer)
     mdl.train(t, v)
     mdl.save('score-lm')
