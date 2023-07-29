@@ -1,10 +1,12 @@
+import json
+import argparse
+
+import torch
 import transformers as tfs
 import datasets as ds
 
-import json
-import torch
-
-# Based on https://huggingface.co/docs/transformers/tasks/language_modeling
+# https://huggingface.co/docs/transformers/tasks/language_modeling
+# https://huggingface.co/docs/transformers/v4.20.1/en/perf_train_gpu_one#deepspeed-zero
 
 class JsonlGenerator:
     def __init__(self, cfg, tok, fname):
@@ -65,6 +67,7 @@ class ScorePredictorModel:
 
         self.model = tfs.AutoModelForCausalLM.from_pretrained(
             cfg['model_name'],
+            use_cache=False,
         ).to(self.cfg['device'])
         self.collator = tfs.DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
 
@@ -84,8 +87,10 @@ class ScorePredictorModel:
             push_to_hub=False,
             report_to='none',
             gradient_accumulation_steps=self.cfg['gradient_accumulation_steps'],
+            gradient_checkpointing=True,
             lr_scheduler_type=self.cfg['scheduler'],
             bf16=True,
+            tf32=True,
             # no_cuda=True,
             # use_ipex=True
         )
@@ -124,7 +129,19 @@ class ScorePredictorModel:
         self.trainer.save_model(name)
 
 if __name__ == '__main__':
-    with open('train_cfg.json', 'r') as f:
+    parser = argparse.ArgumentParser(
+        description="Generate text with a trained model.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "-c", "--config",
+        type=str,
+        help="Path to a configuration file. Pass the same thing that was given to training.",
+        default="train_cfg.json"
+    )
+    opt = parser.parse_args()
+
+    with open(opt.config, 'r') as f:
         cfg = json.load(f)
         print("Using config", cfg)
 
