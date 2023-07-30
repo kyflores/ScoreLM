@@ -19,10 +19,20 @@ def stringize_measure(measure: m21.stream.Measure) -> str:
     for n in notes:
         if isinstance(n, m21.chord.Chord):
             d = n.duration
+            note_strings = []
+            for p in n.notes:
+                name = p.pitch.nameWithOctave
+                tie = ""
+                if p.tie is not None:
+                    tietype = p.tie.type
+                    if tietype == 'start' or tietype == 'continue':
+                        tie = "T."
+                note_strings.append("{}{}".format(tie, name))
+
             nnames = "n({}, {})".format(
                 d.quarterLength,
                 # d.type,
-                " ".join([p.nameWithOctave for p in n.pitches]))
+                " ".join(note_strings))
             out.append(nnames)
         elif isinstance(n, m21.note.Note):
             raise Exception("UNIMPLEMENTED")
@@ -39,7 +49,7 @@ def process_score(score):
     measures = chords.measures(0, None).getElementsByClass(['Measure']).stream().elements
     measure_strings = [stringize_measure(m) for m in measures]
     out = "_".join(measure_strings)
-    return out
+    return out, None
 
 def write_composer(composer: str):
     print('Serializing {}'.format(composer))
@@ -48,7 +58,7 @@ def write_composer(composer: str):
         for p in pieces:
             print("Parsed {}".format(p))
             c = m21.corpus.parse(p)
-            score_txt = process_score(c)
+            score_txt, meta = process_score(c)
 
             line = json.dumps({
                 'text': score_txt,

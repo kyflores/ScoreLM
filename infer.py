@@ -7,8 +7,6 @@ import music21 as m21
 import transformers as tfs
 import torch
 
-teststr = "|n(0.5, F#3 A3 C#4 F#4), n(0.5, F#3 B3 C#4 G#4)|_|n(0.25, F#3 C#4 F#4 A4), n(0.25, G#3 C#4 F#4 A4), n(0.25, A3 C#4 F#4 A4), n(0.25, B3 C#4 F#4 A4), n(0.5, C#4 E#4 G#4), n(0.5, C#3 B3 E#4 G#4), n(1.0, D3 A3 F#4), n(0.5, D3 B3 F#4), n(0.5, D3 B3 F#4 G#4)|_|n(0.5, C#3 C#4 F#4 A4), n(0.5, B2 C#4 F#4 A4), n(0.5, C#3 C#4 E#4 G#4), n(0.5, C#3 B3 E#4 G#4), n(1.0, F#2 A3 C#4 F#4), n(1.0, F#3 A3 F#4 C#5)|_|n(0.5, G#3 B3 F#4 B4), n(0.5, G#3 B3 E#4 B4), n(0.5, A3 C#4 F#4 A4), n(0.5, B3 C#4 F#4 A4), n(1.0, C#4 E#4 G#4), n(1.0, C#3 C#4 E#4 G#4)|_|n(0.5, F#3 C#4 F#4 A4), n(0.5, E3 C#4 F#4 A4), n(0.5, D3 D4 F#4 A4), n(0.5, C#3 D4 F#4 A4), n(0.5, D3 D4 F#4 B4), n(0.25, B2 E4 G#4 B4), n(0.25, B2 F#4 A4 B4), n(0.5, E3 E4 G#4 B4), n(0.5, E2 E3 D4 G#4 B4)|_|n(0.5, A2 C#4 G#4 C#5), n(0.5, A3 C#4 F#4 C#5), n(0.5, G#3 B3 E#4 C#5), n(0.5, F#3 A3 F#4 C#5), n(0.5, F#3 D4 G#4 B4), n(0.5, E#3 C#4 G#4 B4), n(0.5, F#3 C#4 G#4 A4), n(0.5, D3 D4 F#4 A4)|_|n(0.5, B2 D4 F#4 G#4), n(0.5, G#2 B3 F#4 G#4), n(0.5, C#3 G#3 E#4 G#4), n(0.5, C#3 C#4 E#4 G#4), n(1.0, F#2 A3 C#4 F#4), n(0.5, F#3 A3 F#4 C#5), n(0.5, E3 A3 F#4 C#5)|_|n(0.5, D3 B3 F#4 B4), n(0.5, C#3 C#4 E#4 B4), n(0.5, B#2 D#4 F#4 A4), n(0.5, B#2 D#4 F#4 G#4), n(1.0, C#3 C#4 E#4 G#4), n(0.5, A2 C#4 F#4 C#5), n(0.5, A2 C#4 E4 C#5)|_|n(0.5, B2 F#3 D#4 B4), n(0.5, C#3 F#3 E4 B4), n(0.5, D#3 B3 F#4 A4), n(0.5, B2 B3 D#4 A4), n(1.0, E3 B3 E4 G#4), n(0.5, E#3 C#4 G#4), n(0.5, C#3 C#4 E#4 G#4)|_|n(0.5, F#3 C#4 F#4 A4), n(0.5, F#2 F#3 A3 F#4 A4), n(0.5, F#3 D4 A4), n(0.5, D3 D4 F#4 A4), n(0.5, G3 D4 B4), n(0.5, G2 G3 B3 D4 B4), n(0.5, G#3 E4 B4), n(0.5, E3 E4 G#4 B4)|_|n(0.5, A3 E4 A4 C#5), n(0.5, A2 A3 C#4 G4 C#5), n(0.5, A#3 F#4 C#5), n(0.5, F#3 E4 F#4 C#5), n(0.5, B3 D4 F#4 B4), n(0.5, B2 B3 C#4 E#4 B4), n(0.5, B#3 D#4 F#4 A4), n(0.5, G#3 D#4 F#4 G#4)|_|n(0.5, C#4 F#4 G#4), n(0.25, G#3 B3 C#4 E#4 G#4), n(0.25, G#3 B3 C#4 D#4 G#4), n(0.5, C#3 C#4 E#4 G#4), n(0.5, C#3 B3 E#4 G#4), n(1.0, F#2 F#3 A3 C#4 F#4)|"
-
 def infer(n, cfg, prompt=None):
     print("Loading model for inference.")
     tokenizer = tfs.AutoTokenizer.from_pretrained(
@@ -76,9 +74,21 @@ def interpret(text):
                 duration = 1.0
 
             notes = [x.strip() for x in m[1].strip().split(' ')]
+            m_notes = []
+            for n in notes:
+                try:
+                    tie = False
+                    if n.startswith('T.'):
+                        tie = True
+                        n = n[2:]
+                    note = m21.note.Note(n)
+                    if tie:
+                        note.tie = m21.tie.Tie('start')
+                    m_notes.append(note)
+                except Exception as e:
+                    print("Generated invalid note {}. Ignoring...".format(e))
 
             m_duration = m21.duration.Duration(duration)
-            m_notes = [m21.note.Note(x) for x in notes]
 
             m_chord = m21.chord.Chord(m_notes)
             m_chord.duration = m_duration
