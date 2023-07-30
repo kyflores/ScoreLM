@@ -165,3 +165,4 @@ score-lm/
 data.txt
 out.txt
 dataset/*.jsonl
+*.sclm

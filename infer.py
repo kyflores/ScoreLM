@@ -148,11 +148,11 @@ if __name__ == '__main__':
     if opt.mode == "infer":
         output = infer(opt.generations, cfg, opt.prompt)
         for ix, v in enumerate(output):
-            fname = "{}_{}.txt".format(opt.scorefile, ix)
+            fname = "{}_{}.sclm".format(opt.scorefile, ix)
             with open(fname, 'w') as f:
                 f.write(v)
     elif opt.mode == "post":
-        with open(opt.scorefile + ".txt", 'r') as f:
+        with open(opt.scorefile, 'r') as f:
             text = f.read()
             interpret(text).show()
     elif opt.mode == "both":
