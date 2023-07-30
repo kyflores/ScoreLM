@@ -1,12 +1,13 @@
 {
-    "model_name": "EleutherAI/pythia-1b-deduped",
-    "blocksize": 1024,
-    "batchsize": 8,
-    "gradient_accumulation_steps": 2,
-    "lr": "5e-4",
+    "model_name": "EleutherAI/pythia-70m-deduped",
+    "blocksize": 512,
+    "batchsize": 16,
+    "gradient_accumulation_steps": 4,
+    "gradient_checkpointing": false,
+    "lr": "3e-4",
     "scheduler": "cosine",
-    "epochs": 1,
+    "epochs": 10,
     "save_steps": 500,
-    "eval_steps": 100,
+    "eval_steps": 50,
     "device": "cuda"
 }

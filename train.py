@@ -67,7 +67,7 @@ class ScorePredictorModel:
 
         self.model = tfs.AutoModelForCausalLM.from_pretrained(
             cfg['model_name'],
-            use_cache=False,
+            use_cache=not cfg['gradient_checkpointing']
         ).to(self.cfg['device'])
         self.collator = tfs.DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
 
@@ -87,7 +87,7 @@ class ScorePredictorModel:
             push_to_hub=False,
             report_to='none',
             gradient_accumulation_steps=self.cfg['gradient_accumulation_steps'],
-            gradient_checkpointing=True,
+            gradient_checkpointing=self.cfg['gradient_checkpointing'],
             lr_scheduler_type=self.cfg['scheduler'],
             bf16=True,
             tf32=True,

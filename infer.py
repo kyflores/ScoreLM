@@ -42,8 +42,9 @@ def infer(n, cfg, prompt=None):
             pad_token_id=tokenizer.eos_token_id,
             num_return_sequences=n
         )
+        print(text.shape)
 
-        output = tokenizer.batch_decode(text.squeeze())
+        output = tokenizer.batch_decode(text)
 
     print(output)
     return output
