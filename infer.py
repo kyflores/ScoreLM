@@ -17,10 +17,28 @@ def infer(n, cfg, prompt=None):
     )
     tokenizer.pad_token = tokenizer.eos_token
 
-    generation_cfg = tfs.GenerationConfig.from_pretrained("score-lm")
-    generation_cfg.use_cache = False
+    model = tfs.AutoModelForCausalLM.from_pretrained(
+        "score-lm",
+    ).to(cfg['device'])
+    # Need to manually enable use_cache. It must be disabled for training if
+    # gradient_checkpointing is enabled, but if it's disabled, it slows
+    # down generation (???)
+    model.config.use_cache=True
 
-    model = tfs.AutoModelForCausalLM.from_pretrained("score-lm").to(cfg['device'])
+    generation_cfg = tfs.GenerationConfig(
+        do_sample=True,
+        eos_token_id=model.config.eos_token_id,
+        bos_token_id=model.config.bos_token_id,
+        pad_token_id=model.config.eos_token_id,
+        use_cache=True,
+        max_new_tokens=512*3,
+        temperature=0.8,
+        top_k=50,
+        top_p=1.0,
+        repetition_penalty=1.0,
+        length_penalty=1.0,
+        num_return_sequences=n
+    )
 
     inputs = tokenizer(prompt, return_tensors='pt', truncation=True).to(cfg['device'])
     inputs = inputs.to(cfg['device'])
@@ -32,17 +50,6 @@ def infer(n, cfg, prompt=None):
         text = model.generate(
             **inputs,
             generation_config=generation_cfg,
-            do_sample=True,
-            # Generate up to this many tokens.
-            max_new_tokens=2000,
-            # Set smaller for more predictable, regular generations. Set higher for more randomness.
-            temperature=0.75,
-            top_k=50,
-            top_p=1.0,
-            repetition_penalty=1.0,
-            length_penalty=1.0,
-            pad_token_id=tokenizer.eos_token_id,
-            num_return_sequences=n
         )
         print(text.shape)
 
