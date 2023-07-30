@@ -5,7 +5,7 @@ Analyze musical scores with language models!
 First, create a new virtualenv or conda environment with python & pip.
 Then:
 ```
-pip install transformers datasets accelerate music21
+pip install transformers datasets accelerate music21 deepspeed
 ```
 
 Finally, note that the scripts generate some very large files, like datasets or model

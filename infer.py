@@ -10,6 +10,7 @@ import torch
 teststr = "|n(0.5, F#3 A3 C#4 F#4), n(0.5, F#3 B3 C#4 G#4)|_|n(0.25, F#3 C#4 F#4 A4), n(0.25, G#3 C#4 F#4 A4), n(0.25, A3 C#4 F#4 A4), n(0.25, B3 C#4 F#4 A4), n(0.5, C#4 E#4 G#4), n(0.5, C#3 B3 E#4 G#4), n(1.0, D3 A3 F#4), n(0.5, D3 B3 F#4), n(0.5, D3 B3 F#4 G#4)|_|n(0.5, C#3 C#4 F#4 A4), n(0.5, B2 C#4 F#4 A4), n(0.5, C#3 C#4 E#4 G#4), n(0.5, C#3 B3 E#4 G#4), n(1.0, F#2 A3 C#4 F#4), n(1.0, F#3 A3 F#4 C#5)|_|n(0.5, G#3 B3 F#4 B4), n(0.5, G#3 B3 E#4 B4), n(0.5, A3 C#4 F#4 A4), n(0.5, B3 C#4 F#4 A4), n(1.0, C#4 E#4 G#4), n(1.0, C#3 C#4 E#4 G#4)|_|n(0.5, F#3 C#4 F#4 A4), n(0.5, E3 C#4 F#4 A4), n(0.5, D3 D4 F#4 A4), n(0.5, C#3 D4 F#4 A4), n(0.5, D3 D4 F#4 B4), n(0.25, B2 E4 G#4 B4), n(0.25, B2 F#4 A4 B4), n(0.5, E3 E4 G#4 B4), n(0.5, E2 E3 D4 G#4 B4)|_|n(0.5, A2 C#4 G#4 C#5), n(0.5, A3 C#4 F#4 C#5), n(0.5, G#3 B3 E#4 C#5), n(0.5, F#3 A3 F#4 C#5), n(0.5, F#3 D4 G#4 B4), n(0.5, E#3 C#4 G#4 B4), n(0.5, F#3 C#4 G#4 A4), n(0.5, D3 D4 F#4 A4)|_|n(0.5, B2 D4 F#4 G#4), n(0.5, G#2 B3 F#4 G#4), n(0.5, C#3 G#3 E#4 G#4), n(0.5, C#3 C#4 E#4 G#4), n(1.0, F#2 A3 C#4 F#4), n(0.5, F#3 A3 F#4 C#5), n(0.5, E3 A3 F#4 C#5)|_|n(0.5, D3 B3 F#4 B4), n(0.5, C#3 C#4 E#4 B4), n(0.5, B#2 D#4 F#4 A4), n(0.5, B#2 D#4 F#4 G#4), n(1.0, C#3 C#4 E#4 G#4), n(0.5, A2 C#4 F#4 C#5), n(0.5, A2 C#4 E4 C#5)|_|n(0.5, B2 F#3 D#4 B4), n(0.5, C#3 F#3 E4 B4), n(0.5, D#3 B3 F#4 A4), n(0.5, B2 B3 D#4 A4), n(1.0, E3 B3 E4 G#4), n(0.5, E#3 C#4 G#4), n(0.5, C#3 C#4 E#4 G#4)|_|n(0.5, F#3 C#4 F#4 A4), n(0.5, F#2 F#3 A3 F#4 A4), n(0.5, F#3 D4 A4), n(0.5, D3 D4 F#4 A4), n(0.5, G3 D4 B4), n(0.5, G2 G3 B3 D4 B4), n(0.5, G#3 E4 B4), n(0.5, E3 E4 G#4 B4)|_|n(0.5, A3 E4 A4 C#5), n(0.5, A2 A3 C#4 G4 C#5), n(0.5, A#3 F#4 C#5), n(0.5, F#3 E4 F#4 C#5), n(0.5, B3 D4 F#4 B4), n(0.5, B2 B3 C#4 E#4 B4), n(0.5, B#3 D#4 F#4 A4), n(0.5, G#3 D#4 F#4 G#4)|_|n(0.5, C#4 F#4 G#4), n(0.25, G#3 B3 C#4 E#4 G#4), n(0.25, G#3 B3 C#4 D#4 G#4), n(0.5, C#3 C#4 E#4 G#4), n(0.5, C#3 B3 E#4 G#4), n(1.0, F#2 F#3 A3 C#4 F#4)|"
 
 def infer(n, cfg, prompt=None):
+    print("Loading model for inference.")
     tokenizer = tfs.AutoTokenizer.from_pretrained(
         cfg['model_name'],
         model_max_length=cfg['blocksize'],
@@ -23,24 +24,28 @@ def infer(n, cfg, prompt=None):
     inputs = tokenizer(prompt, return_tensors='pt', truncation=True).to(cfg['device'])
     inputs = inputs.to(cfg['device'])
 
+    print("Loaded model. Will produce {} generations".format(n))
     output = []
-    for x in range(n):
+    with torch.no_grad():
         # See https://huggingface.co/docs/transformers/v4.18.0/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate
-        with torch.no_grad():
-            text = model.generate(
-                **inputs,
-                do_sample=True,
-                # Generate up to this many tokens.
-                max_new_tokens=512*3,
-                # Set smaller for more predictable, regular generations. Set higher for more randomness.
-                temperature=0.65,
-                top_k=50,
-                top_p=1.0,
-                repetition_penalty=1.0,
-                length_penalty=1.0,
-                pad_token_id=tokenizer.eos_token_id,
-            )
-        output.append(tokenizer.batch_decode(text)[0])
+        text = model.generate(
+            **inputs,
+            do_sample=True,
+            # Generate up to this many tokens.
+            max_new_tokens=512*2,
+            # Set smaller for more predictable, regular generations. Set higher for more randomness.
+            temperature=0.75,
+            top_k=50,
+            top_p=1.0,
+            repetition_penalty=1.0,
+            length_penalty=1.0,
+            pad_token_id=tokenizer.eos_token_id,
+            num_return_sequences=n
+        )
+
+        output = tokenizer.batch_decode(text.squeeze())
+
+    print(output)
     return output
 
 # Parse our text format back into a music21 score
@@ -131,5 +136,5 @@ if __name__ == '__main__':
             text = f.read()
             interpret(text).show()
     elif opt.mode == "both":
-        output = infer(cfg)
-        interpret(output).show()
+        output = infer(1, cfg, opt.prompt)
+        interpret(output[0]).show()
