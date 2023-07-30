@@ -13,18 +13,14 @@ def infer(n, cfg, prompt=None):
     print("Loading model for inference.")
     tokenizer = tfs.AutoTokenizer.from_pretrained(
         cfg['model_name'],
-        # If trained with gradient checkpointing, the saved model configuration will
-        # set use_cache to False. If left that way, text generation is much slower, so
-        # manually re-enable it.
-        # TODO Setup a generation config file as this will trigger a deprecation warning
-        use_cache=True,
         model_max_length=cfg['blocksize'],
     )
     tokenizer.pad_token = tokenizer.eos_token
 
-    model = tfs.AutoModelForCausalLM.from_pretrained(
-        "score-lm",
-    ).to(cfg['device'])
+    generation_cfg = tfs.GenerationConfig.from_pretrained("score-lm")
+    generation_cfg.use_cache = False
+
+    model = tfs.AutoModelForCausalLM.from_pretrained("score-lm").to(cfg['device'])
 
     inputs = tokenizer(prompt, return_tensors='pt', truncation=True).to(cfg['device'])
     inputs = inputs.to(cfg['device'])
@@ -35,9 +31,10 @@ def infer(n, cfg, prompt=None):
         # See https://huggingface.co/docs/transformers/v4.18.0/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate
         text = model.generate(
             **inputs,
+            generation_config=generation_cfg,
             do_sample=True,
             # Generate up to this many tokens.
-            max_new_tokens=512*2,
+            max_new_tokens=2000,
             # Set smaller for more predictable, regular generations. Set higher for more randomness.
             temperature=0.75,
             top_k=50,
