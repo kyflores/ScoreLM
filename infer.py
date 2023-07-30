@@ -13,6 +13,11 @@ def infer(n, cfg, prompt=None):
     print("Loading model for inference.")
     tokenizer = tfs.AutoTokenizer.from_pretrained(
         cfg['model_name'],
+        # If trained with gradient checkpointing, the saved model configuration will
+        # set use_cache to False. If left that way, text generation is much slower, so
+        # manually re-enable it.
+        # TODO Setup a generation config file as this will trigger a deprecation warning
+        use_cache=True,
         model_max_length=cfg['blocksize'],
     )
     tokenizer.pad_token = tokenizer.eos_token
