@@ -86,7 +86,7 @@ def interpret(text):
                         note.tie = m21.tie.Tie('start')
                     m_notes.append(note)
                 except Exception as e:
-                    print("Generated invalid note {}. Ignoring...".format(e))
+                    print("Generated invalid note \"{}\", exception {}.".format(n, e))
 
             m_duration = m21.duration.Duration(duration)
 
