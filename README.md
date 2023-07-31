@@ -13,7 +13,15 @@ weights. **Please DO NOT commit these to git!** The default names for these file
 but please be careful.
 
 ## Data generation
-Run `generate_data.py` to process the Bach Chorales into a text format.
+Run `generate_data.py` to process scores from composers in music21's database into the model's language.
+This script produces `dataset/<composername>.jsonl` for each composer. To create a training dataset, use
+`cat` to merge the composers you want into one file called `data.jsonl`.
+```
+cat bach.jsonl mozart.jsonl > data.jsonl
+```
+Filenames can be repeated to include them multiple times. This can be used to influence the composition
+of the dataset, or balance it. For instance `palestrina.jsonl` is the largest by a wide margin, so other
+composers might need to be repeated to get more diverse and interesting generations.
 
 ## Training
 Use `train.py` to train the model. This script finetunes Eleuther's Pythia model for the score text
