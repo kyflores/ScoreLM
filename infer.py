@@ -11,7 +11,6 @@ def infer(n, cfg, prompt=None):
     print("Loading model for inference.")
     tokenizer = tfs.AutoTokenizer.from_pretrained(
         cfg['model_name'],
-        model_max_length=cfg['blocksize'],
     )
     tokenizer.pad_token = tokenizer.eos_token
 
@@ -23,14 +22,25 @@ def infer(n, cfg, prompt=None):
     # down generation (???)
     model.config.use_cache=True
 
+    inputs = tokenizer(prompt, return_tensors='pt', truncation=True).to(cfg['device'])
+    inputs = inputs.to(cfg['device'])
+    prompt_len_tok = inputs['input_ids'].shape[-1]
+    # TODO this dimension is model specific, so it should be a parameter.
+    # I think it's the `hidden_size`?
+    MODEL_TEXT_SIZE=2048
+    print("Prompt has size {}, leaving {} tokens for generation".format(
+        prompt_len_tok,
+        MODEL_TEXT_SIZE - prompt_len_tok
+    ))
+
     generation_cfg = tfs.GenerationConfig(
         do_sample=True,
         eos_token_id=model.config.eos_token_id,
         bos_token_id=model.config.bos_token_id,
         pad_token_id=model.config.eos_token_id,
         use_cache=True,
-        max_new_tokens=512*3,
-        temperature=0.8,
+        max_new_tokens=(MODEL_TEXT_SIZE - prompt_len_tok),
+        temperature=0.80,
         top_k=50,
         top_p=1.0,
         repetition_penalty=1.0,
@@ -38,8 +48,6 @@ def infer(n, cfg, prompt=None):
         num_return_sequences=n
     )
 
-    inputs = tokenizer(prompt, return_tensors='pt', truncation=True).to(cfg['device'])
-    inputs = inputs.to(cfg['device'])
 
     print("Loaded model. Will produce {} generations".format(n))
     output = []
@@ -110,7 +118,7 @@ if __name__ == '__main__':
         "-c", "--config",
         type=str,
         help="Path to a configuration file. Pass the same thing that was given to training.",
-        default="train_cfg.json"
+        default="configs/scorelm_1b_24GB_ds.json"
     )
     parser.add_argument(
         "-m", "--mode",
