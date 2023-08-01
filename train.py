@@ -137,7 +137,6 @@ if __name__ == '__main__':
         "-c", "--config",
         type=str,
         help="Path to a configuration file. Pass the same thing that was given to training.",
-        default="train_cfg.json"
     )
     opt = parser.parse_args()
 
@@ -147,7 +146,6 @@ if __name__ == '__main__':
 
     tokenizer = tfs.AutoTokenizer.from_pretrained(
         cfg['model_name'],
-        model_max_length=cfg['blocksize'],
     )
     tokenizer.pad_token = tokenizer.eos_token
 

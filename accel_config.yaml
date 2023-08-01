@@ -1,6 +1,7 @@
 # See https://huggingface.co/docs/accelerate/package_reference/cli
 compute_environment: LOCAL_MACHINE
 deepspeed_config:
+  # Change this to match your main config
   gradient_accumulation_steps: 1
   offload_optimizer_device: cpu
   offload_param_device: cpu
