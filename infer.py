@@ -14,23 +14,26 @@ def infer(n, cfg, prompt=None):
     )
     tokenizer.pad_token = tokenizer.eos_token
 
+    # Need to manually enable use_cache. It must be disabled for training if
+    # gradient_checkpointing is enabled, but if it's disabled, it slows generation
+    config = tfs.AutoConfig.from_pretrained("score-lm")
+    config.use_cache=True
+
     model = tfs.AutoModelForCausalLM.from_pretrained(
         "score-lm",
+        config=config
     ).to(cfg['device'])
-    # Need to manually enable use_cache. It must be disabled for training if
-    # gradient_checkpointing is enabled, but if it's disabled, it slows
-    # down generation (???)
-    model.config.use_cache=True
+    model.eval()
 
     inputs = tokenizer(prompt, return_tensors='pt', truncation=True).to(cfg['device'])
     inputs = inputs.to(cfg['device'])
     prompt_len_tok = inputs['input_ids'].shape[-1]
-    # TODO this dimension is model specific, so it should be a parameter.
-    # I think it's the `hidden_size`?
-    MODEL_TEXT_SIZE=2048
+
+    model_text_size = config.hidden_size
+
     print("Prompt has size {}, leaving {} tokens for generation".format(
         prompt_len_tok,
-        MODEL_TEXT_SIZE - prompt_len_tok
+        model_text_size - prompt_len_tok
     ))
 
     generation_cfg = tfs.GenerationConfig(
@@ -39,9 +42,9 @@ def infer(n, cfg, prompt=None):
         bos_token_id=model.config.bos_token_id,
         pad_token_id=model.config.eos_token_id,
         use_cache=True,
-        max_new_tokens=(MODEL_TEXT_SIZE - prompt_len_tok),
-        temperature=0.80,
-        top_k=50,
+        max_new_tokens=(model_text_size - prompt_len_tok),
+        temperature=0.850,
+        top_k=150,
         top_p=1.0,
         repetition_penalty=1.0,
         length_penalty=1.0,
@@ -67,7 +70,6 @@ def infer(n, cfg, prompt=None):
 # Parse our text format back into a music21 score
 def interpret(text):
     # measures = re.findall(r"\|.*?\|", text)
-
     outstream = m21.stream.Stream()
     note_match = re.compile(r"n\((?P<duration>[^,]*),(?P<notes>.*?)\)")
     # for measure in measures:

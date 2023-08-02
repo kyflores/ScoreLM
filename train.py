@@ -65,10 +65,19 @@ class ScorePredictorModel:
         self.cfg = cfg
         self.tokenizer = tok
 
+        config = tfs.AutoConfig.from_pretrained(
+            cfg['model_name'],
+        )
+        config.use_cache = not cfg['gradient_checkpointing']
+        config.attention_dropout = cfg['attention_dropout']
+        # config.hidden_dropout=0.20,
+
         self.model = tfs.AutoModelForCausalLM.from_pretrained(
             cfg['model_name'],
-            use_cache=not cfg['gradient_checkpointing']
+            config=config,
         ).to(self.cfg['device'])
+        print("Model configuration:\n", self.model.config)
+
         self.collator = tfs.DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
 
     def train(self, dset_train, dset_val):

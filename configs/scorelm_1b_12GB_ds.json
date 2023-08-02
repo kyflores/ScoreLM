@@ -4,6 +4,7 @@
     "batchsize": 8,
     "gradient_accumulation_steps": 2,
     "gradient_checkpointing": true,
+    "attention_dropout": 0.3,
     "lr": "3e-4",
     "scheduler": "cosine",
     "epochs": 3,
