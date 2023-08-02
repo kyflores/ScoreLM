@@ -1,0 +1,13 @@
+{
+    "model_name": "EleutherAI/pythia-410m-deduped",
+    "blocksize": 512,
+    "batchsize": 2,
+    "gradient_accumulation_steps": 8,
+    "gradient_checkpointing": true,
+    "lr": "3e-4",
+    "scheduler": "cosine",
+    "epochs": 3,
+    "save_steps": 500,
+    "eval_steps": 50,
+    "device": "cuda"
+}
