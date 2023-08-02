@@ -7,7 +7,7 @@ import music21 as m21
 import transformers as tfs
 import torch
 
-def infer(n, cfg, prompt=None):
+def infer(opt, cfg):
     print("Loading model for inference.")
     tokenizer = tfs.AutoTokenizer.from_pretrained(
         cfg['model_name'],
@@ -25,7 +25,7 @@ def infer(n, cfg, prompt=None):
     ).to(cfg['device'])
     model.eval()
 
-    inputs = tokenizer(prompt, return_tensors='pt', truncation=True).to(cfg['device'])
+    inputs = tokenizer(opt.prompt, return_tensors='pt', truncation=True).to(cfg['device'])
     inputs = inputs.to(cfg['device'])
     prompt_len_tok = inputs['input_ids'].shape[-1]
 
@@ -43,16 +43,16 @@ def infer(n, cfg, prompt=None):
         pad_token_id=model.config.eos_token_id,
         use_cache=True,
         max_new_tokens=(model_text_size - prompt_len_tok),
-        temperature=0.850,
-        top_k=150,
-        top_p=1.0,
+        temperature=opt.temperature,
+        top_k=opt.top_k,
+        top_p=opt.top_p,
         repetition_penalty=1.0,
         length_penalty=1.0,
-        num_return_sequences=n
+        num_return_sequences=opt.generations
     )
 
 
-    print("Loaded model. Will produce {} generations".format(n))
+    print("Loaded model. Will produce {} generations".format(opt.generations))
     output = []
     with torch.no_grad():
         # See https://huggingface.co/docs/transformers/v4.18.0/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate
@@ -117,6 +117,25 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
+        "-t", "--temperature",
+        type=float,
+        help="Temperature to use for generation.",
+        default=0.5
+    )
+    parser.add_argument(
+        "--top_k",
+        type=int,
+        help="Value to use for topk sampling during generation.",
+        default=50,
+    )
+    parser.add_argument(
+        "--top_p",
+        type=float,
+        help="Value to use for topp sampling during generation.",
+        default=1.0,
+    )
+
+    parser.add_argument(
         "-c", "--config",
         type=str,
         help="Path to a configuration file. Pass the same thing that was given to training.",
@@ -156,7 +175,7 @@ if __name__ == '__main__':
         print("Using config", cfg)
 
     if opt.mode == "infer":
-        output = infer(opt.generations, cfg, opt.prompt)
+        output = infer(opt, cfg)
         for ix, v in enumerate(output):
             fname = "{}_{}.sclm".format(opt.scorefile, ix)
             with open(fname, 'w') as f:
@@ -166,5 +185,5 @@ if __name__ == '__main__':
             text = f.read()
             interpret(text).show()
     elif opt.mode == "both":
-        output = infer(1, cfg, opt.prompt)
+        output = infer(opt, cfg)
         interpret(output[0]).show()
