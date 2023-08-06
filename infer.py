@@ -20,7 +20,7 @@ def infer(opt, cfg):
     config.use_cache=True
 
     model = tfs.AutoModelForCausalLM.from_pretrained(
-        "score-lm",
+        opt.modelname,
         config=config
     ).to(cfg['device'])
     model.eval()
@@ -140,6 +140,12 @@ if __name__ == '__main__':
         type=str,
         help="Path to a configuration file. Pass the same thing that was given to training.",
         default="configs/scorelm_1b_24GB_ds.json"
+    )
+    parser.add_argument(
+        '-n', '--modelname',
+        type=str,
+        help="Name of the model to load for inference. Can be a patch, or HF hub name.",
+        default="score-lm"
     )
     parser.add_argument(
         "-m", "--mode",
