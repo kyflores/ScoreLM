@@ -89,3 +89,7 @@ errors such as:
 * Non-power-of-two duration (like triplets) handling seems bugged and needs more investigation, but
   there aren't many triplets in the training data at the moment. They render but Musecore produces
   warnings.
+
+## WSL2
+Deepspeed hits an out of memory issue on WSL2, which is discussed in [this thread](https://github.com/microsoft/DeepSpeed/issues/2977)
+Apply the workaround suggest, removing the pin memory call.

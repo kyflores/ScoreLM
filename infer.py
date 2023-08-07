@@ -10,13 +10,13 @@ import torch
 def infer(opt, cfg):
     print("Loading model for inference.")
     tokenizer = tfs.AutoTokenizer.from_pretrained(
-        cfg['model_name'],
+        opt.modelname,
     )
     tokenizer.pad_token = tokenizer.eos_token
 
     # Need to manually enable use_cache. It must be disabled for training if
     # gradient_checkpointing is enabled, but if it's disabled, it slows generation
-    config = tfs.AutoConfig.from_pretrained("score-lm")
+    config = tfs.AutoConfig.from_pretrained(opt.modelname)
     config.use_cache=True
 
     model = tfs.AutoModelForCausalLM.from_pretrained(
