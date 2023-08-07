@@ -23,6 +23,19 @@ Filenames can be repeated to include them multiple times. This can be used to in
 of the dataset, or balance it. For instance `palestrina.jsonl` is the largest by a wide margin, so other
 composers might need to be repeated to get more diverse and interesting generations.
 
+For an approximately balanced dataset, you can do:
+```
+cat mozart.jsonl \
+    mozart.jsonl \
+    mozart.jsonl \
+    mozart.jsonl \
+    monteverdi.jsonl \
+    monteverdi.jsonl \
+    trecento.jsonl \
+    bach.jsonl \
+    beethoven.jsonl > data.jsonl
+```
+
 ## Training
 Use `train.py` to train the model. This script finetunes Eleuther's Pythia model for the score text
 format. Right now we use Pythia for a few reasons:
