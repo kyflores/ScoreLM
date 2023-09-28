@@ -1,11 +1,12 @@
 import json
-import sys
 import re
 import argparse
 
 import music21 as m21
 import transformers as tfs
 import torch
+
+OVERLAP_AMT=0.25
 
 def infer(opt, cfg):
     print("Loading model for inference.")
@@ -42,29 +43,47 @@ def infer(opt, cfg):
         bos_token_id=model.config.bos_token_id,
         pad_token_id=model.config.eos_token_id,
         use_cache=True,
+        # This will be changed on each generation cycle as the last generation becomes
+        # part of the context
         max_new_tokens=(model_text_size - prompt_len_tok),
         temperature=opt.temperature,
         top_k=opt.top_k,
         top_p=opt.top_p,
         repetition_penalty=1.0,
         length_penalty=1.0,
-        num_return_sequences=opt.generations
+        num_return_sequences=1
     )
 
+    print("Loaded model. Will produce {} iterations".format(opt.iterations))
+    iters = opt.iterations
+    overlap = int(OVERLAP_AMT * model_text_size)
 
-    print("Loaded model. Will produce {} generations".format(opt.generations))
-    output = []
+    context = inputs
+    accumulator = [context["input_ids"]]
     with torch.no_grad():
-        # See https://huggingface.co/docs/transformers/v4.18.0/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate
-        text = model.generate(
-            **inputs,
-            generation_config=generation_cfg,
-        )
-        print(text.shape)
+        for i in range(iters):
+            # See https://huggingface.co/docs/transformers/v4.18.0/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate
+            generation_cfg.max_new_tokens = (model_text_size - context["input_ids"].shape[-1])
+            tokens = model.generate(
+                **context,
+                generation_config=generation_cfg,
+            )
+            tmp = context['input_ids'].shape[1]
+            accumulator.append(tokens[:, tmp:])
 
-        output = tokenizer.batch_decode(text)
+            # Collect the last "overlap" tokens for use as the prompt in the next generation
+            new_ctx = tokens[:, -overlap:]
+            context = {
+                'input_ids': new_ctx,
+                'attention_mask': torch.ones(new_ctx.shape).to(new_ctx.device)
+            }
 
-    print(output)
+    # Since we've been storing outputs as tokens, decode them to human readable text now.
+    accumulator = [t.flatten().tolist() for t in accumulator]
+    output = tokenizer.batch_decode(accumulator)
+    with open('debug.txt', 'w') as z:
+        z.write("\n".join(output))
+    output = ''.join(output)
     return output
 
 # Parse our text format back into a music21 score
@@ -150,16 +169,17 @@ if __name__ == '__main__':
     parser.add_argument(
         "-m", "--mode",
         type=str,
-        choices=["infer", "post", "both"],
+        choices=["infer", "post", "both", "continuous"],
         default="both",
         help="Set to infer to generate text, or post to parse generated text"
             "Choosing \"both\" performs inference first, then post processing"
     )
     parser.add_argument(
-        "-g", "--generations",
+        "-i", "--iterations",
         type=int,
         default=1,
-        help="Number of generations to produce in infer mode."
+        help="Number of iterations to generate for. At the end of each iteration, the end"
+             "of the generated text is used as the prompt for the next iteration."
     )
     parser.add_argument(
         "-p", "--prompt",
@@ -182,14 +202,13 @@ if __name__ == '__main__':
 
     if opt.mode == "infer":
         output = infer(opt, cfg)
-        for ix, v in enumerate(output):
-            fname = "{}_{}.sclm".format(opt.scorefile, ix)
-            with open(fname, 'w') as f:
-                f.write(v)
+        fname = "{}.sclm".format(opt.scorefile)
+        with open(fname, 'w') as f:
+            f.write(output)
     elif opt.mode == "post":
         with open(opt.scorefile, 'r') as f:
             text = f.read()
             interpret(text).show()
     elif opt.mode == "both":
         output = infer(opt, cfg)
-        interpret(output[0]).show()
+        interpret(output).show()
