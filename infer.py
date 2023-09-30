@@ -49,7 +49,7 @@ def infer(opt, cfg):
         temperature=opt.temperature,
         top_k=opt.top_k,
         top_p=opt.top_p,
-        repetition_penalty=1.0,
+        repetition_penalty=1.10,
         length_penalty=1.0,
         num_return_sequences=1
     )
