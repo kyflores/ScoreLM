@@ -55,6 +55,9 @@ requirement, at the cost of additional main RAM use. To use deepspeed,
 ```
 accelerate launch --config_file accel_config.yaml train.py
 ```
+If you receive an error about CPU Adam like this: `AttributeError: 'DeepSpeedCPUAdam' object has no attribute 'ds_opt_adam'`
+Then try reinstalling deepspeed with these arguments: `DS_BUILD_CPU_ADAM=1  BUILD_UTILS=1  pip install deepspeed -U `
+I had this problem on ROCm setups but not CUDA.
 
 ## Inference
 Use `infer.py` to output text with a trained model. This scripts loads the model
